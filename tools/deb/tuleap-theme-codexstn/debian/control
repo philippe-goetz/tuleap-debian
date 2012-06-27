@@ -1,0 +1,12 @@
+Source: tuleap-theme-codexstn
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-theme-codexstn
+Architecture: all
+Depends: ${misc:Depends} tuleap
+Description: ST-Ericsson theme for Tuleap
