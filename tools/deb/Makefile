@@ -1,6 +1,19 @@
-all:  tuleap-themes
+all:  tuleap-plugins
+.PHONY: all
+
+xall:  tuleap-themes
+
+tuleap-plugins: tuleap-plugin-agiledashboard
+.PHONY: tuleap-plugins
+
+tuleap-plugin-agiledashboard:
+	rsync -av --delete --exclude=debian ../../plugins/agiledashboard $@
+	cd $@; dpkg-buildpackage 
+.PHONY: tuleap-plugin-agiledashboard
+
 
 tuleap-themes: tuleap-theme-codex tuleap-theme-codexstn tuleap-theme-codextab tuleap-theme-dawn tuleap-theme-savannah tuleap-theme-steerforge tuleap-theme-sttab
+.PHONY: tuleap-themes
 
 tuleap-theme-codex:
 	rsync -av --delete --exclude=debian ../../src/www/themes/CodeX $@
