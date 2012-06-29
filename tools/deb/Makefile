@@ -1,7 +1,8 @@
-all:  tuleap-plugins
+all:  tuleap-plugin-cardwall
 .PHONY: all
 
 xall:  tuleap-themes
+
 
 tuleap-plugins: tuleap-plugin-agiledashboard
 .PHONY: tuleap-plugins
@@ -10,6 +11,11 @@ tuleap-plugin-agiledashboard:
 	rsync -av --delete --exclude=debian ../../plugins/agiledashboard $@
 	cd $@; dpkg-buildpackage 
 .PHONY: tuleap-plugin-agiledashboard
+
+tuleap-plugin-cardwall:
+	rsync -av --delete --exclude=debian ../../plugins/cardwall $@
+	cd $@; dpkg-buildpackage 
+.PHONY: tuleap-plugin-cardwall
 
 
 tuleap-themes: tuleap-theme-codex tuleap-theme-codexstn tuleap-theme-codextab tuleap-theme-dawn tuleap-theme-savannah tuleap-theme-steerforge tuleap-theme-sttab

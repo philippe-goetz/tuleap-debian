@@ -1,0 +1,14 @@
+Source: tuleap-plugin-cardwall
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugin-cardwall
+Architecture: all
+Depends: ${misc:Depends} tuleap
+Description: Graphs for Tracker v5
+  Fancy cardwall output on top of Tracker v5
+
