@@ -5,3 +5,10 @@ tuleap-plugin-forumml/debian/rules
 	-> create /var/run/forumml/
 	-> create /usr/lib/codendi/bin/mail_2_DB.pl
 
+tuleap-plugin-git/debian/copyright
+	-> create various directories
+	-> update with gitphp copyrights
+	
+tuleap-theme-im/debian/copyrigth
+	-> update with various copyright
+

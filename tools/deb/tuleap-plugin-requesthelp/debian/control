@@ -1,0 +1,14 @@
+Source: tuleap-plugin-requesthelp
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugin-requesthelp
+Architecture: all
+Depends: ${misc:Depends} tuleap
+Description: Insert Remedy tickets using Codex
+  Plugin to insert Remedy tickets using Codex (used for ST only)
+

@@ -1,0 +1,15 @@
+Source: tuleap-plugin-ldap
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugin-ldap
+Architecture: all
+Depends: ${misc:Depends} tuleap
+Description: Tuleap plugin to manage LDAP integration
+  LDAP Plugin for Tuleap. Provides LDAP information, LDAP
+  authentication, user and group management.
+

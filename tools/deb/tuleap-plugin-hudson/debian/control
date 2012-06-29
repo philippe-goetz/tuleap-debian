@@ -1,0 +1,14 @@
+Source: tuleap-plugin-hudson
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugin-hudson
+Architecture: all
+Depends: ${misc:Depends} tuleap
+Description: Hudson plugin for Tuleap
+  Plugin to install the Tuleap Hudson plugin for continuous integration
+

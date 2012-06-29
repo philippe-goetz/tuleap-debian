@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+clean build:
+	@echo "Nothing to $@"
+
+binary:
+	dh_testdir
+	dh_testroot
+	dh_install fulltextsearch /usr/share/codendi/plugins/
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb

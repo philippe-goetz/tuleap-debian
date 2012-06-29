@@ -1,0 +1,14 @@
+Source: tuleap-plugin-webdav
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugin-webdav
+Architecture: all
+Depends: ${misc:Depends} tuleap
+Description: WebDAV plugin for Tuleap
+  Plugin to access to file releases & docman though WebDAV
+
