@@ -1,10 +1,10 @@
-all:  tuleap-plugin-cardwall
+all: tuleap-plugin-forumml
 .PHONY: all
 
 xall:  tuleap-themes
 
 
-tuleap-plugins: tuleap-plugin-agiledashboard
+tuleap-plugins: tuleap-plugin-agiledashboard tuleap-plugin-cardwall tuleap-plugin-docmanwatermark
 .PHONY: tuleap-plugins
 
 tuleap-plugin-agiledashboard:
@@ -16,6 +16,16 @@ tuleap-plugin-cardwall:
 	rsync -av --delete --exclude=debian ../../plugins/cardwall $@
 	cd $@; dpkg-buildpackage 
 .PHONY: tuleap-plugin-cardwall
+
+tuleap-plugin-docmanwatermark:
+	rsync -av --delete --exclude=debian ../../plugins/docmanwatermark $@
+	cd $@; dpkg-buildpackage 
+.PHONY: tuleap-plugin-docmanwatermark
+
+tuleap-plugin-forumml:
+	rsync -av --delete --exclude=debian ../../plugins/forumml $@
+	cd $@; dpkg-buildpackage 
+.PHONY: tuleap-plugin-forumml
 
 
 tuleap-themes: tuleap-theme-codex tuleap-theme-codexstn tuleap-theme-codextab tuleap-theme-dawn tuleap-theme-savannah tuleap-theme-steerforge tuleap-theme-sttab

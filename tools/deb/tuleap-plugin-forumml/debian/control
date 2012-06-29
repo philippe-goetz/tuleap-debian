@@ -1,0 +1,14 @@
+Source: tuleap-plugin-forumml
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugin-forumml
+Architecture: all
+Depends: ${misc:Depends} tuleap
+Description: ForumML plugin for Tuleap
+  ForumML brings to Tuleap a very nice mail archive viewer and the possibility
+  to send mails through the web interface. It can replace the forums.

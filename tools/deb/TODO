@@ -1,2 +1,7 @@
-debian/copyrigth of tuleap-theme-steerforge tuleap-theme-tuleap to review
--> fonts
+tuleap-theme-steerforge/debian/copyrigth tuleap-theme-tuleap/debian/copyrigth
+	-> add font copyrights
+
+tuleap-plugin-forumml/debian/rules
+	-> create /var/run/forumml/
+	-> create /usr/lib/codendi/bin/mail_2_DB.pl
+
