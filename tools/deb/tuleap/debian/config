@@ -123,8 +123,8 @@ codendiadm_passwd="codendi"
 
 if [ "x$1" = "xreconfigure" ]; then
     #db_reset tuleap/mysql_host
-    db_reset tuleap/sys_default_name
-    db_set tuleap/sys_default_name `hostname --short`
+    db_reset tuleap/sys_default_domain
+    db_set tuleap/sys_default_domain `hostname --short`
     db_reset tuleap/sys_fullname
     db_set tuleap/sys_fullname `hostname --fqdn`
     db_reset tuleap/sys_ip_address
@@ -139,10 +139,10 @@ fi
 db_get tuleap/mysql_host
 mysql_host="$RET"
 
-db_input critical tuleap/sys_default_name || true
+db_input critical tuleap/sys_default_domain || true
 db_go
-db_get tuleap/sys_default_name
-sys_default_name="$RET"
+db_get tuleap/sys_default_domain
+sys_default_domain="$RET"
 
 db_input critical tuleap/sys_fullname || true
 db_go
@@ -169,7 +169,7 @@ db_go
 db_get tuleap/disable_subdomains
 disable_subdomains="$RET"
 
-#echo "sys_default_name=$sys_default_name"
+#echo "sys_default_domain=$sys_default_domain"
 #echo "sys_fullname=$sys_fullname"
 #echo "sys_ip_address=$sys_ip_address"
 #echo "sys_org_name=$sys_org_name"

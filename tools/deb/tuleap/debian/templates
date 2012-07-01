@@ -1,4 +1,4 @@
-Template: tuleap/sys_default_name
+Template: tuleap/sys_default_domain
 Type: string
 Description: Tuleap Domain Name:
  Test.
