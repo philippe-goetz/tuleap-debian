@@ -1,0 +1,14 @@
+Source: tuleap-plugins
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugins
+Architecture: all
+Depends: ${misc:Depends} tuleap-core
+Description: Plugins Administration
+  Offers a web interface for managing plugins.
+

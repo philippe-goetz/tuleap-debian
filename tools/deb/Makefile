@@ -1,10 +1,15 @@
-all: tuleap-plugins
+# Dependency Hierarchy
+# ====================
+# tuleap => tuleap-core, tuleap-plugins
+# tuleap-plugins => tuleap-core
+# tuleap-plugin-* => tuleap-plugins
+# tuleap-core => mysql, php-
+
+all: tuleap-plugins tuleap-themes
 .PHONY: all
 
-xall: tuleap-plugins tuleap-themes
-
-
-tuleap-plugins: tuleap-plugin-agiledashboard \
+tuleap-plugins: tuleap-plugins \ # pluginsadministration
+                tuleap-plugin-agiledashboard \
                 tuleap-plugin-cardwall \
                 tuleap-plugin-docmanwatermark \
                 tuleap-plugin-forumml \
@@ -18,6 +23,11 @@ tuleap-plugins: tuleap-plugin-agiledashboard \
                 tuleap-plugin-tracker \
                 tuleap-plugin-webdav
 .PHONY: tuleap-plugins
+
+tuleap-plugins:
+  rsync -av --delete --exclude=debian ../../plugins/pluginsadministration $@
+  cd $@; dpkg-buildpackage 
+.PHONY: tuleap-plugin-plugins
 
 tuleap-plugin-agiledashboard:
 	rsync -av --delete --exclude=debian ../../plugins/agiledashboard $@
