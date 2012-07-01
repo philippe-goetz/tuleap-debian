@@ -19,7 +19,12 @@ CHOWN='/bin/chown'
 CHMOD='/bin/chmod'
 CP='/bin/cp'
 GREP='/bin/grep'
+INSTALL='/usr/bin/install'
+LN='/bin/ln'
+MKDIR='/bin/mkdir'
 PERL='/usr/bin/perl'
+RM='/bin/ln'
+
 MYSQL='/usr/bin/mysql'
 MYSQLSHOW='/usr/bin/mysqlshow'
 
@@ -177,12 +182,12 @@ set -x
 
 echo "Installing configuration files..."
 
-mkdir -p /etc/codendi/conf
+$MKDIR -p /etc/codendi/conf
 for f in \
 /etc/codendi/conf/database.inc \
 /etc/codendi/conf/local.inc; do
     fn=`basename $f`
-    $CP -f $INSTALL_DIR/src/etc/$fn.dist $f
+    $CP -f $INSTALL_DIR/src/etc/$fn.deb $f
     #$CHOWN codendiadm.codendiadm $f
     $CHOWN www-data.www-data $f
     $CHMOD 640 $f
@@ -201,3 +206,10 @@ fi
 
 # replace string patterns in database.inc
 substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$codendiadm_passwd" 
+
+# manage apache2
+$CP -f $INSTALL_DIR/src/etc/site-tuleap.deb /etc/apache2/sites-available/tuleap
+$RM -f /etc/apache2/sites-enabled/tuleap
+$LN -sf ../sites-available/tuleap /etc/apache2/sites-enabled/tuleap
+
+/etc/init.d/apache2 reload

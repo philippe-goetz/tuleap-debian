@@ -1,0 +1,23 @@
+
+NameVirtualHost 192.168.137.99:443
+<VirtualHost 192.168.137.99:443>
+   SSLEngine on
+   SSLCertificateFile /home/pgo/ssl.key/server.crt
+   SSLCertificateKeyFile /home/pgo/ssl.key/server.pem
+   DocumentRoot /usr/share/codendi/src/www
+</VirtualHost>
+
+<VirtualHost *:80>
+   DocumentRoot /usr/share/codendi/src/www
+</VirtualHost>
+
+<Directory "/usr/share/codendi/src/www">
+    Options Includes FollowSymLinks MultiViews
+    AllowOverride All
+    AcceptPathInfo On
+    Order allow,deny
+    Allow from all
+    SetEnvIfNoCase Request_URI /file/download\.php no-gzip dont-vary
+    php_value include_path "/usr/share/pear:/usr/share/codendi/src/www/include:/usr/share/codendi/src"
+</Directory>
+
