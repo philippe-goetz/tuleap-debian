@@ -1,0 +1,14 @@
+Source: tuleap
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap
+Architecture: all
+Depends: ${misc:Depends} debconf
+Description: The Tuleap forge
+ Tuleap is a web based application that address all the aspects of product
+ development.

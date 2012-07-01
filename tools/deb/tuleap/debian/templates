@@ -1,0 +1,55 @@
+Template: tuleap/sys_default_name
+Type: string
+Description: Tuleap Domain Name:
+ Test.
+
+Template: tuleap/sys_fullname
+Type: string
+Description: Tuleap Server fully qualified machine name:
+ Test.
+
+Template: tuleap/sys_ip_address
+Type: string
+Description: Tuleap Server IP address:
+ Test.
+
+Template: tuleap/sys_org_name
+Type: string
+Default: Tuleap
+Description: Your Company short name:
+ Test.
+
+Template: tuleap/sys_long_org_name
+Type: string
+Default: Tuleap ALM
+Description: Your Company long name:
+ Test.
+
+Template: tuleap/disable_subdomains
+Type: boolean
+Default: yes
+Description: Disable sub-domain management (no DNS delegation)?
+ Test.
+
+Template: tuleap/mysql_host
+Type: string
+Default: localhost
+Description: MySQL Host:
+ Test.
+
+Template: tuleap/mysql_passwd
+Type: password
+Description: MySQL Password:
+ Test.
+
+Template: tuleap/mysql_passwd_retry
+Type: boolean
+Description: MySQL Password Retry:
+ Test.
+
+Template: tuleap/mysql_codendi_overwrite
+Type: boolean
+Default: true
+Description: Tuleap Database already exists. Overwrite?
+ Test.
+ 

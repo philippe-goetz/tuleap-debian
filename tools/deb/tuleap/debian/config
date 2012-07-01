@@ -1,0 +1,199 @@
+#!/bin/bash
+#
+# Copyright (c) Enalean, Tuleap 2011,2012
+# Copyright (c) STMicroelectronics, Codex 2009,2010
+# Copyright (c) Xerox Corporation, Codendi 2001-2009.
+#
+# This file is licensed under the GNU General Public License version 2. See the file COPYING.
+#
+#      Originally written by Laurent Julliard 2004, Codendi Team, Xerox
+# 
+
+. /usr/share/debconf/confmodule
+
+export INSTALL_DIR="/usr/share/codendi"
+
+# path to command line tools
+CAT='/bin/cat'
+CHOWN='/bin/chown'
+CHMOD='/bin/chmod'
+CP='/bin/cp'
+GREP='/bin/grep'
+PERL='/usr/bin/perl'
+MYSQL='/usr/bin/mysql'
+MYSQLSHOW='/usr/bin/mysqlshow'
+
+die() {
+  # $1: message to prompt before exiting
+  echo -e "**ERROR** $1"; exit 1
+}
+
+substitute() {
+  # $1: filename, $2: string to match, $3: replacement string
+  # Allow '/' is $3, so we need to double-escape the string
+  replacement=`echo $3 | sed "s|/|\\\\\/|g"`
+  $PERL -pi -e "s/$2/$replacement/g" $1
+}
+
+###############################################################################
+#
+# Mysql configuration
+#
+setup_mysql() {
+    echo "Creating the Tuleap database..."
+
+    pass_opt="--host=$mysql_host --user=root"
+    while ! $MYSQLSHOW $pass_opt 2>&1; do
+        if [ "$pass_opt" != "--host=$mysql_host --user=root" ]; then
+            db_reset tuleap/mysql_passwd_retry
+            db_input critical tuleap/mysql_passwd_retry || true
+            db_go
+            db_get tuleap/mysql_passwd_retry
+            mysql_passwd_retry="$RET"
+            test "x$RET" != "xtrue" && die "MySQL root password fails"
+        fi
+        db_reset tuleap/mysql_passwd
+        db_input critical tuleap/mysql_passwd || true
+        db_go
+        db_get tuleap/mysql_passwd
+        mysql_passwd="$RET"
+        echo mysql_passwd=$mysql_passwd
+        pass_opt="--host=$mysql_host --user=root --password=$mysql_passwd"
+    done
+
+    # Test if tuleap DB already exists
+    mysql_codendi_overwrite="-"
+    freshdb=0
+    if $MYSQLSHOW $pass_opt | $GREP codendi 2>&1 >/dev/null; then
+        db_reset tuleap/mysql_codendi_overwrite
+        db_input critical tuleap/mysql_codendi_overwrite || true
+        db_go
+        db_get tuleap/mysql_codendi_overwrite
+        mysql_codendi_overwrite="$RET"
+    fi
+
+    # Delete the Tuleap DB if asked for
+    if [ "$mysql_codendi_overwrite" = "true" ]; then
+        $MYSQL $pass_opt -e "DROP DATABASE codendi"
+    fi
+set -x
+    # If no codendi, create it!
+    if ! $MYSQLSHOW $pass_opt | $GREP codendi 2>&1 >/dev/null; then
+        freshdb=1
+        $MYSQL $pass_opt -e "CREATE DATABASE codendi DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"
+        $CAT <<EOF | $MYSQL $pass_opt mysql
+GRANT ALL PRIVILEGES on *.* to 'codendiadm'@'$mysql_httpd_host' identified by '$codendiadm_passwd' WITH GRANT OPTION;
+REVOKE SUPER ON *.* FROM 'codendiadm'@'$mysql_httpd_host';
+GRANT ALL PRIVILEGES on *.* to 'root'@'$mysql_httpd_host' identified by '$rt_passwd';
+FLUSH PRIVILEGES;
+EOF
+    fi
+    # Password has changed
+    pass_opt="-uroot --password=$rt_passwd"
+
+    if [ $freshdb -eq 1 ]; then
+        echo "Populating the Tuleap database..."
+        cd $INSTALL_DIR/src/db/mysql/
+        $MYSQL -u codendiadm codendi --password=$codendiadm_passwd < database_structure.sql   # create the DB
+        cp database_initvalues.sql /tmp/database_initvalues.sql
+        substitute '/tmp/database_initvalues.sql' '_DOMAIN_NAME_' "$sys_default_domain"
+        $MYSQL -u codendiadm codendi --password=$codendiadm_passwd < /tmp/database_initvalues.sql  # populate with init values.
+        rm -f /tmp/database_initvalues.sql
+
+        # Create dbauthuser
+        $CAT <<EOF | $MYSQL $pass_opt mysql
+GRANT SELECT ON codendi.user to dbauthuser@$mysql_httpd_host identified by '$dbauth_passwd';
+GRANT SELECT ON codendi.groups to dbauthuser@$mysql_httpd_host;
+GRANT SELECT ON codendi.user_group to dbauthuser@$mysql_httpd_host;
+FLUSH PRIVILEGES;
+EOF
+    fi
+}
+###############################################################################
+
+rt_passwd="root"
+mysql_httpd_host="localhost"
+dbauth_passwd="db"
+codendiadm_passwd="codendi"
+
+if [ "x$1" = "xreconfigure" ]; then
+    #db_reset tuleap/mysql_host
+    db_reset tuleap/sys_default_name
+    db_set tuleap/sys_default_name `hostname --short`
+    db_reset tuleap/sys_fullname
+    db_set tuleap/sys_fullname `hostname --fqdn`
+    db_reset tuleap/sys_ip_address
+    db_set tuleap/sys_ip_address `hostname --ip-address`
+    db_reset tuleap/sys_org_name
+    db_reset tuleap/sys_long_org_name
+    db_reset tuleap/disable_subdomains
+fi
+
+#db_input critical tuleap/mysql_host || true
+#db_go
+db_get tuleap/mysql_host
+mysql_host="$RET"
+
+db_input critical tuleap/sys_default_name || true
+db_go
+db_get tuleap/sys_default_name
+sys_default_name="$RET"
+
+db_input critical tuleap/sys_fullname || true
+db_go
+db_get tuleap/sys_fullname
+sys_fullname="$RET"
+
+db_input critical tuleap/sys_ip_address || true
+db_go
+db_get tuleap/sys_ip_address
+sys_ip_address="$RET"
+
+db_input critical tuleap/sys_org_name || true
+db_go
+db_get tuleap/sys_org_name
+sys_org_name="$RET"
+
+db_input critical tuleap/sys_long_org_name || true
+db_go
+db_get tuleap/sys_long_org_name
+sys_long_org_name="$RET"
+
+db_input critical tuleap/disable_subdomains || true
+db_go
+db_get tuleap/disable_subdomains
+disable_subdomains="$RET"
+
+#echo "sys_default_name=$sys_default_name"
+#echo "sys_fullname=$sys_fullname"
+#echo "sys_ip_address=$sys_ip_address"
+#echo "sys_org_name=$sys_org_name"
+#echo "sys_long_org_name=$sys_long_org_name"
+#echo "disable_subdomains=$disable_subdomains"
+
+setup_mysql
+
+echo "Installing configuration files..."
+
+for f in \
+/etc/codendi/conf/database.inc \
+/etc/codendi/conf/local.inc; do
+    fn=`basename $f`
+    $CP -f $INSTALL_DIR/src/etc/$fn.dist $f
+    $CHOWN codendiadm.codendiadm $f
+    $CHMOD 640 $f
+done
+
+# replace string patterns in local.inc
+substitute '/etc/codendi/conf/local.inc' '%sys_default_domain%' "$sys_default_domain" 
+substitute '/etc/codendi/conf/local.inc' '%sys_org_name%' "$sys_org_name" 
+substitute '/etc/codendi/conf/local.inc' '%sys_long_org_name%' "$sys_long_org_name" 
+substitute '/etc/codendi/conf/local.inc' '%sys_fullname%' "$sys_fullname" 
+substitute '/etc/codendi/conf/local.inc' '%sys_dbauth_passwd%' "$dbauth_passwd" 
+if [ "$disable_subdomains" = "true" ]; then
+  substitute '/etc/codendi/conf/local.inc' 'sys_lists_host = "lists.' 'sys_lists_host = "'
+  substitute '/etc/codendi/conf/local.inc' 'sys_disable_subdomains = 0' 'sys_disable_subdomains = 1'
+fi
+
+# replace string patterns in database.inc
+substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$codendiadm_passwd" 
