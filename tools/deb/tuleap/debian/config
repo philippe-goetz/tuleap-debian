@@ -76,7 +76,7 @@ setup_mysql() {
     if [ "$mysql_codendi_overwrite" = "true" ]; then
         $MYSQL $pass_opt -e "DROP DATABASE codendi"
     fi
-set -x
+
     # If no codendi, create it!
     if ! $MYSQLSHOW $pass_opt | $GREP codendi 2>&1 >/dev/null; then
         freshdb=1
@@ -173,14 +173,18 @@ disable_subdomains="$RET"
 
 setup_mysql
 
+set -x
+
 echo "Installing configuration files..."
 
+mkdir -p /etc/codendi/conf
 for f in \
 /etc/codendi/conf/database.inc \
 /etc/codendi/conf/local.inc; do
     fn=`basename $f`
     $CP -f $INSTALL_DIR/src/etc/$fn.dist $f
-    $CHOWN codendiadm.codendiadm $f
+    #$CHOWN codendiadm.codendiadm $f
+    $CHOWN www-data.www-data $f
     $CHMOD 640 $f
 done
 
