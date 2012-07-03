@@ -8,5 +8,5 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-theme-sttab
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends} tuleap-core
 Description: STMicroelectronics theme for Tuleap

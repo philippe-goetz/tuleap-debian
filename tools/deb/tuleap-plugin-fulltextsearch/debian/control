@@ -8,6 +8,6 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-fulltextsearch
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: Full-Text Search
   Allows documents of the docman to be searched in a full-text manner.

@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-hudson
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: Hudson plugin for Tuleap
   Plugin to install the Tuleap Hudson plugin for continuous integration
 

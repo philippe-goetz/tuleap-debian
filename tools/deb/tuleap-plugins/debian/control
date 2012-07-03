@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugins
 Architecture: all
-Depends: ${misc:Depends} tuleap-core
+Depends: ${misc:Depends}, tuleap-core
 Description: Plugins Administration
   Offers a web interface for managing plugins.
 

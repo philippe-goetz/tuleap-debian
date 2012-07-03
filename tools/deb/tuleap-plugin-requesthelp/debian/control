@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-requesthelp
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: Insert Remedy tickets using Codex
   Plugin to insert Remedy tickets using Codex (used for ST only)
 

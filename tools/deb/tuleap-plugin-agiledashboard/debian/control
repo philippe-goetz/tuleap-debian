@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-agiledashboard
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: Agile Dashboard
   Agile Dashboard aims to provide an nice integration of Scrum/Kanban
   tool on top of Tracker.

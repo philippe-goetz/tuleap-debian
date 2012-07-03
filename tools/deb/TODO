@@ -12,3 +12,23 @@ tuleap-plugin-git/debian/copyright
 tuleap-theme-im/debian/copyrigth
 	-> update with various copyright
 
+tuleap-plugin-admindelegation/debian/control
+  -> Description
+
+tuleap-plugin-docman/debian/control
+  -> Description
+
+tuleap-plugin-projectlinks/debian/control
+  -> Description
+  
+tuleap-plugin-statistics/debian/control
+  -> Description
+  
+tuleap-plugin-template/debian/control
+  -> Description
+
+tuleap-plugin-tracker-date-reminder/debian/control
+  -> Description
+  
+tuleap-plugin-userlog/debian/control
+  -> Description

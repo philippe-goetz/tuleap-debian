@@ -8,5 +8,5 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-theme-tuleap
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends} tuleap-core
 Description: Tuleap theme

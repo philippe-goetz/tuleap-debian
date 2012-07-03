@@ -8,7 +8,16 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap
 Architecture: all
-Depends: ${misc:Depends} debconf php-htmlpurifier
+Depends: ${misc:Depends},
+         tuleap-core,
+         tuleap-plugins,
+         tuleap-plugin-admindelegation,
+         tuleap-plugin-docman,
+         tuleap-plugin-graphontrackers,
+         tuleap-plugin-projectlinks,
+         tuleap-plugin-statistics,
+         tuleap-plugin-tracker_date_reminder, 
+          tuleap-plugin-userlog
 Description: The Tuleap forge
  Tuleap is a web based application that address all the aspects of product
  development.

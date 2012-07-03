@@ -8,5 +8,5 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-theme-dawn
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends} tuleap-core
 Description: Dawn theme for Tuleap

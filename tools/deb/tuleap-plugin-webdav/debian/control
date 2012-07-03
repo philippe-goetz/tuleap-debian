@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-webdav
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: WebDAV plugin for Tuleap
   Plugin to access to file releases & docman though WebDAV
 

@@ -8,7 +8,14 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap
 Architecture: all
-Depends: ${misc:Depends} debconf php-htmlpurifier
+Depends: ${misc:Depends} debconf
+Depends: apache2
+Depends: jpgraph-tuleap
+Depends: libapache2-mod-php5
+Depends: mysql-server
+Depends: php-htmlpurifier
+Depends: php5
+Depends: php5-mysql
 Description: The Tuleap forge
  Tuleap is a web based application that address all the aspects of product
  development.

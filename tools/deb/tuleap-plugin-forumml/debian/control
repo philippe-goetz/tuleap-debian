@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-forumml
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: ForumML plugin for Tuleap
   ForumML brings to Tuleap a very nice mail archive viewer and the possibility
   to send mails through the web interface. It can replace the forums.

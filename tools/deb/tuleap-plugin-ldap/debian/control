@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-ldap
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: Tuleap plugin to manage LDAP integration
   LDAP Plugin for Tuleap. Provides LDAP information, LDAP
   authentication, user and group management.

@@ -8,7 +8,7 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap-plugin-im
 Architecture: all
-Depends: ${misc:Depends} tuleap
+Depends: ${misc:Depends}, tuleap-plugins
 Description: Instant Messaging Plugin for Tuleap
   Provides instant messaging capabilities, based on a Jabber/XMPP server.
 

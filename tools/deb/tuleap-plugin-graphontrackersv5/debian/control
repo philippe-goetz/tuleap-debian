@@ -1,0 +1,14 @@
+Source: tuleap-plugin-graphontrackersv5
+Section: contrib/tuleap
+Priority: extra
+Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://www.tuleap.net/
+
+Package: tuleap-plugin-graphontrackersv5
+Architecture: all
+Depends: ${misc:Depends}, tuleap-plugins
+Description: TBD
+  TBD.
+
