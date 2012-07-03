@@ -1,4 +1,4 @@
-Source: tuleap
+Source: tuleap-core
 Section: contrib/tuleap
 Priority: extra
 Maintainer: Philippe Goetz <philippe.goetz@gmail.com>
@@ -6,16 +6,16 @@ Build-Depends: debhelper (>= 7.0.50~)
 Standards-Version: 3.8.4
 Homepage: http://www.tuleap.net/
 
-Package: tuleap
+Package: tuleap-core
 Architecture: all
-Depends: ${misc:Depends} debconf
-Depends: apache2
-Depends: jpgraph-tuleap
-Depends: libapache2-mod-php5
-Depends: mysql-server
-Depends: php-htmlpurifier
-Depends: php5
-Depends: php5-mysql
+Depends: ${misc:Depends}, debconf,
+         apache2,
+         jpgraph-tuleap,
+         libapache2-mod-php5,
+         mysql-server,
+         php-htmlpurifier,
+         php5,
+         php5-mysql
 Description: The Tuleap forge
  Tuleap is a web based application that address all the aspects of product
  development.

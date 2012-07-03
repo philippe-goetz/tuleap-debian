@@ -10,7 +10,7 @@ clean build:
 binary:
 	dh_testdir
 	dh_testroot
-	dh_install xxx /usr/share/codendi/
+	#dh_install xxx /usr/share/codendi/
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

@@ -1,0 +1,7 @@
+Origin: Tuleap
+Label: Tuleap
+Suite: stable
+Codename: squeeze
+Architectures: amd64 i386 source
+Components: main non-free contrib
+Description: Tuleap APT Repository

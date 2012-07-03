@@ -8,8 +8,23 @@
 all: plugins themes
 .PHONY: all
 
+tuleap:
+	cd $@; dpkg-buildpackage 
+.PHONY: tuleap
+
+tuleap-core:
+	rsync -av --delete --exclude=debian ../../cli $@
+	rsync -av --delete --exclude=debian ../../site-content $@
+	rsync -av --delete --exclude=debian ../../src $@
+	rsync -av --delete --exclude=debian ../../tools $@
+	rsync -av --delete --exclude=debian ../../ChangeLog $@
+	rsync -av --delete --exclude=debian ../../VERSION $@
+	cd $@; dpkg-buildpackage 
+.PHONY: tuleap-core
+
 plugins: \
   tuleap-plugins \
+  tuleap-plugin-admindelegation \
   tuleap-plugin-agiledashboard \
   tuleap-plugin-cardwall \
   tuleap-plugin-docman \
@@ -31,8 +46,6 @@ plugins: \
   tuleap-plugin-userlog \
   tuleap-plugin-webdav
 .PHONY: plugins
-
-test: tuleap-plugin-admindelegation
 
 tuleap-plugins:
 	rsync -av --delete --exclude=debian ../../plugins/pluginsadministration $@
@@ -182,4 +195,16 @@ tuleap-theme-tuleap:
 	rsync -av --delete --exclude=debian ../../src/www/themes/Tuleap $@
 	cd $@; dpkg-buildpackage 
 .PHONY: tuleap-theme-tuleap
+
+repo: tuleap tuleap-core plugins themes
+	for f in *.changes; do reprepro -Vb repo/debian include squeeze $$f; done
+.PHONY: repo
+
+apache2:
+	sudo cp tuleap-repo /etc/apache2/sites-available
+	sudo sed -i "s/%DocumentRoot%/$(subst /,\\/,$(PWD))\\/repo/" /etc/apache2/sites-available/tuleap-repo
+	sudo rm -f /etc/apache2/sites-enabled/tuleap-repo
+	sudo ln -s ../sites-available/tuleap-repo /etc/apache2/sites-enabled
+	sudo /etc/init.d/apache2 reload
+.PHONW: apache2
 

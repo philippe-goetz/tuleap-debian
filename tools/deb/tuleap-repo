@@ -1,0 +1,36 @@
+# see http://www.jejik.com/articles/2006/09/setting_up_and_managing_an_apt_repository_with_reprepro/
+# Ensure that Apache listens on port 81
+Listen 81
+
+# Listen for virtual host requests on all IP addresses
+NameVirtualHost *:81
+
+<VirtualHost *:81>
+	DocumentRoot %DocumentRoot%
+	ServerName packages.debian
+
+	# Allow directory listings so that people can browse the repository from their browser too
+        <Directory "%DocumentRoot%">
+                Options Indexes FollowSymLinks MultiViews
+                DirectoryIndex index.html
+                AllowOverride Options
+                Order allow,deny
+                allow from all
+        </Directory>
+ 
+        # Hide the conf/ directory for all repositories
+        <Directory "%DocumentRoot%/*/conf">
+                Order allow,deny
+                Deny from all
+                Satisfy all
+        </Directory>
+ 
+        # Hide the db/ directory for all repositories
+        <Directory "%DocumentRoot%/*/db">
+                Order allow,deny
+                Deny from all
+                Satisfy all
+        </Directory>
+
+</VirtualHost>
+

@@ -8,16 +8,20 @@ Homepage: http://www.tuleap.net/
 
 Package: tuleap
 Architecture: all
-Depends: ${misc:Depends},
-         tuleap-core,
-         tuleap-plugins,
-         tuleap-plugin-admindelegation,
-         tuleap-plugin-docman,
-         tuleap-plugin-graphontrackers,
-         tuleap-plugin-projectlinks,
-         tuleap-plugin-statistics,
-         tuleap-plugin-tracker_date_reminder, 
-          tuleap-plugin-userlog
+Depends:    ${misc:Depends},
+            tuleap-core,
+            tuleap-plugins
+Recommends: tuleap-plugin-admindelegation,
+            tuleap-plugin-docman,
+            tuleap-plugin-graphontrackers,
+            tuleap-plugin-projectlinks,
+            tuleap-plugin-statistics,
+            tuleap-plugin-tracker-date-reminder, 
+            tuleap-plugin-userlog
+Suggests:   tuleap-plugin-agiledashboard,
+            tuleap-plugin-cardwall,
+            tuleap-plugin-docmanwatermark,
+            tuleap-plugin-forumml
 Description: The Tuleap forge
  Tuleap is a web based application that address all the aspects of product
  development.
