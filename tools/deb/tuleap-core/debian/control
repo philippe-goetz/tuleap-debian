@@ -10,7 +10,7 @@ Package: tuleap-core
 Architecture: all
 Depends: ${misc:Depends}, debconf,
          apache2,
-         jpgraph-tuleap,
+         libphp-jpgraph-tuleap,
          libapache2-mod-php5,
          mysql-server,
          php-htmlpurifier,

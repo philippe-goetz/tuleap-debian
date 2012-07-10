@@ -202,7 +202,7 @@ repo: tuleap tuleap-core plugins themes
 
 apache2:
 	sudo cp tuleap-repo /etc/apache2/sites-available
-	sudo sed -i "s/%DocumentRoot%/$(subst /,\\/,$(PWD))\\/repo/" /etc/apache2/sites-available/tuleap-repo
+	sudo sed -i "s/%DocumentRoot%/$(subst /,\\/,$(CURDIR))\\/repo/" /etc/apache2/sites-available/tuleap-repo
 	sudo rm -f /etc/apache2/sites-enabled/tuleap-repo
 	sudo ln -s ../sites-available/tuleap-repo /etc/apache2/sites-enabled
 	sudo /etc/init.d/apache2 reload
