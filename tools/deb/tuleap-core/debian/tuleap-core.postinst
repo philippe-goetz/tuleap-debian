@@ -189,9 +189,9 @@ for f in \
     fn=`basename $f`
     $CP -f $INSTALL_DIR/src/etc/$fn.deb $f
     #$CHOWN codendiadm.codendiadm $f
-    $CHOWN www-data.www-data $f
     $CHMOD 640 $f
 done
+$CHOWN -R www-data.www-data /etc/codendi
 
 # replace string patterns in local.inc
 substitute '/etc/codendi/conf/local.inc' '%sys_default_domain%' "$sys_default_domain" 
