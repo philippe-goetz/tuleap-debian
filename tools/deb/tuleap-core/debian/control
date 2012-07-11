@@ -15,7 +15,9 @@ Depends: ${misc:Depends}, debconf,
          mysql-server,
          php-htmlpurifier,
          php5,
-         php5-mysql
+         php5-mysql,
+         php5-gd
+# php5-gd is a dependency of jpgraph (not tuleap)
 Description: The Tuleap forge
  Tuleap is a web based application that address all the aspects of product
  development.
