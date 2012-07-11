@@ -2,8 +2,8 @@
 NameVirtualHost 192.168.137.99:443
 <VirtualHost 192.168.137.99:443>
    SSLEngine on
-   SSLCertificateFile /home/pgo/ssl.key/server.crt
-   SSLCertificateKeyFile /home/pgo/ssl.key/server.pem
+   SSLCertificateFile /etc/ssl/certs/ssl-cert-tuleap.pem
+   SSLCertificateKeyFile /etc/ssl/private/ssl-cert-tuleap.key
    DocumentRoot /usr/share/codendi/src/www
 </VirtualHost>
 

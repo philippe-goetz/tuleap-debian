@@ -209,7 +209,18 @@ substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$codendiadm_passwd
 
 # manage apache2
 $CP -f $INSTALL_DIR/src/etc/site-tuleap.deb /etc/apache2/sites-available/tuleap
-$RM -f /etc/apache2/sites-enabled/tuleap
-$LN -sf ../sites-available/tuleap /etc/apache2/sites-enabled/tuleap
-
+TMPFILE="$(mktemp)" || exit 1
+TMPOUT="$(mktemp)"  || exit 1
+sed -e s#@HostName@#"$sys_fullname"# /usr/share/ssl-cert/ssleay.cnf > $TMPFILE
+if ! openssl req -config $TMPFILE -new -x509 -days 3650 -nodes \
+     -out /etc/ssl/certs/ssl-cert-tuleap.pem \
+     -keyout /etc/ssl/private/ssl-cert-tuleap.key > $TMPOUT 2>&1
+then
+     echo Could not create certificate. Openssl output was: >&2
+     cat $TMPOUT >&2
+     exit 1
+fi
+$RM $TMPFILE $TMPOUT
+a2enmod ssl
+a2ensite tuleap
 /etc/init.d/apache2 reload
