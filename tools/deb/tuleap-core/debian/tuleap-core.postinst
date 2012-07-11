@@ -23,7 +23,7 @@ INSTALL='/usr/bin/install'
 LN='/bin/ln'
 MKDIR='/bin/mkdir'
 PERL='/usr/bin/perl'
-RM='/bin/ln'
+RM='/bin/rm'
 
 MYSQL='/usr/bin/mysql'
 MYSQLSHOW='/usr/bin/mysqlshow'
@@ -56,11 +56,11 @@ setup_mysql() {
             db_get tuleap/mysql_passwd_retry
             mysql_passwd_retry="$RET"
             test "x$RET" != "xtrue" && die "MySQL root password fails"
-            db_fset mysql-server/root_password seen false
+            db_fset tuleap/mysql_passwd seen false
         fi
-        db_input critical mysql-server/root_password || true
+        db_input critical tuleap/mysql_passwd || true
         db_go
-        db_get mysql-server/root_password
+        db_get tuleap/mysql_passwd
         mysql_passwd="$RET"
         echo mysql_passwd=$mysql_passwd
         pass_opt="--host=$mysql_host --user=root --password=$mysql_passwd"
