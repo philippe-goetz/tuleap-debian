@@ -37,7 +37,7 @@ Default: localhost
 Description: MySQL Host:
  Test.
 
-Template: tuleap/mysql_passwd
+Template: mysql-server/root_password
 Type: password
 Description: MySQL Password:
  Test.

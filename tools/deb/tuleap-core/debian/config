@@ -50,17 +50,17 @@ setup_mysql() {
     pass_opt="--host=$mysql_host --user=root"
     while ! $MYSQLSHOW $pass_opt 2>&1; do
         if [ "$pass_opt" != "--host=$mysql_host --user=root" ]; then
-            db_reset tuleap/mysql_passwd_retry
+            db_fset tuleap/mysql_passwd_retry seen false
             db_input critical tuleap/mysql_passwd_retry || true
             db_go
             db_get tuleap/mysql_passwd_retry
             mysql_passwd_retry="$RET"
             test "x$RET" != "xtrue" && die "MySQL root password fails"
+            db_fset mysql-server/root_password seen false
         fi
-        db_reset tuleap/mysql_passwd
-        db_input critical tuleap/mysql_passwd || true
+        db_input critical mysql-server/root_password || true
         db_go
-        db_get tuleap/mysql_passwd
+        db_get mysql-server/root_password
         mysql_passwd="$RET"
         echo mysql_passwd=$mysql_passwd
         pass_opt="--host=$mysql_host --user=root --password=$mysql_passwd"
