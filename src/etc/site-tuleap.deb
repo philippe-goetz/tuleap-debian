@@ -1,6 +1,6 @@
 
-NameVirtualHost 192.168.137.99:443
-<VirtualHost 192.168.137.99:443>
+NameVirtualHost *:443
+<VirtualHost *:443>
    SSLEngine on
    SSLCertificateFile /etc/ssl/certs/ssl-cert-tuleap.pem
    SSLCertificateKeyFile /etc/ssl/private/ssl-cert-tuleap.key

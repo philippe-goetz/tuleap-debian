@@ -222,5 +222,6 @@ then
 fi
 $RM $TMPFILE $TMPOUT
 a2enmod ssl
+a2dissite 000-default
 a2ensite tuleap
 /etc/init.d/apache2 restart
