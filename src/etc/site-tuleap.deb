@@ -87,6 +87,7 @@ AliasMatch ^/plugins/([^/]*)/(.*) /usr/share/codendi/plugins/$1/www/$2
     AllowOverride None
     Order allow,deny
     Allow from all
+    php_value include_path "/usr/share/pear:/usr/share/codendi/src/www/include:/usr/share/codendi/src"
 </DirectoryMatch>
 
 # 3- Custom plugins CGI scripts
@@ -105,4 +106,5 @@ AliasMatch ^/customplugins/([^/]*)/(.*) /etc/codendi/plugins/$1/www/$2
     AllowOverride None
     Order allow,deny
     Allow from all
+    php_value include_path "/usr/share/pear:/usr/share/codendi/src/www/include:/usr/share/codendi/src"
 </DirectoryMatch>
