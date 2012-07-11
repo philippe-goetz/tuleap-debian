@@ -10,7 +10,8 @@ clean build:
 binary:
 	dh_testdir
 	dh_testroot
-	dh_installdebconf
+	dh_installdebconf -v
+	dh_installdeb -v
 	dh_install cli site-content src ChangeLog VERSION /usr/share/codendi/
 	dh_gencontrol
 	dh_md5sums
