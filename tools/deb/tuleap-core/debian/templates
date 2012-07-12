@@ -56,6 +56,7 @@ Description: MySQL Password:
 
 Template: tuleap/mysql_passwd_retry
 Type: boolean
+Default: false
 Description: MySQL Password Retry:
  Test.
 
