@@ -43,6 +43,12 @@ Default: localhost
 Description: MySQL Host:
  Test.
 
+Template: tuleap/mysql_port
+Type: string
+Default: 3306
+Description: MySQL Port:
+ Test.
+
 Template: tuleap/mysql_passwd
 Type: password
 Description: MySQL Password:
@@ -58,4 +64,10 @@ Type: boolean
 Default: true
 Description: Tuleap Database already exists. Overwrite?
  Test.
+ 
+Template: tuleap/final_note
+Type: note
+Description: Tuleap
+ admin
+ siteadmin
  

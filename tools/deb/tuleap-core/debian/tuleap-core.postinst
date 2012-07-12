@@ -117,6 +117,9 @@ FLUSH PRIVILEGES;
 EOF
     fi
     
+    # Clear root password for security purpose
+    db_reset tuleap/mysql_passwd
+    
     # Use now codendiadm
     mysql_opt="--host=$mysql_host --port=$mysql_port --user=codendiadm --password=$codendiadm_passwd"
 
@@ -184,6 +187,7 @@ if [ "x$1" = "xreconfigure" ]; then
     db_fset tuleap/sys_long_org_name seen false
     db_fset tuleap/disable_subdomains seen false
     db_fset tuleap/mysql_host seen false
+    db_fset tuleap/mysql_port seen false
     db_fset tuleap/mysql_passwd seen false
     db_fset tuleap/mysql_codendi_overwrite seen false
 fi
@@ -274,3 +278,7 @@ substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$codendiadm_passwd
 
 # setup apache2
 setup_apache2
+
+db_input critical tuleap/final_note || true
+db_go
+
