@@ -59,7 +59,6 @@ substitute() {
 #
 setup_mysql() {
     echo "Creating the Tuleap database..."
-set -x
     db_input low tuleap/mysql_httpd_host || true
     db_go
     db_get tuleap/mysql_httpd_host
@@ -72,26 +71,31 @@ set -x
     db_go
     db_get tuleap/mysql_port
     mysql_port="$RET"
-    
+
     mysql_opt="--host=$mysql_host --port=$mysql_port --user=root"
-    echo ">>> mysql_opt=$mysql_opt"
+    mysql_passwd_retry=
     while ! $MYSQLSHOW $mysql_opt 2>&1; do
-        if [ "$mysql_opt" != "--host=$mysql_host --user=root" ]; then
-            db_fset tuleap/mysql_passwd_retry seen false
+        if [ "x$mysql_passwd_retry" != "x" ]; then
+            db_reset tuleap/mysql_passwd_retry
             db_input critical tuleap/mysql_passwd_retry || true
             db_go
             db_get tuleap/mysql_passwd_retry
-            mysql_passwd_retry="$RET"
             test "x$RET" != "xtrue" && die "MySQL root password fails"
             db_reset tuleap/mysql_passwd
+        else
+            db_get tuleap/mysql_passwd
+            if [ "x$RET" = "x" ]; then
+                db_reset tuleap/mysql_passwd
+            fi
         fi
         db_input critical tuleap/mysql_passwd || true
         db_go
         db_get tuleap/mysql_passwd
         mysql_passwd="$RET"
         mysql_opt="--host=$mysql_host --port=$mysql_port --user=root --password=$mysql_passwd"
+        mysql_passwd_retry="retry"
     done
-    
+
     echo ">>> mysql_opt=$mysql_opt"
 
     # Test if tuleap DB already exists
