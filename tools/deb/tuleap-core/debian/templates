@@ -69,5 +69,6 @@ Template: tuleap/final_note
 Type: note
 Description: Tuleap Final Note
  Default admin credentials are login: admin / password: siteadmin
+ .
  CHANGE DEFAULT CREDENTIALS BEFORE FIRST USAGE
 

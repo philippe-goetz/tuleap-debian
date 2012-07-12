@@ -59,7 +59,7 @@ substitute() {
 #
 setup_mysql() {
     echo "Creating the Tuleap database..."
-
+set -x
     db_input low tuleap/mysql_httpd_host || true
     db_go
     db_get tuleap/mysql_httpd_host
@@ -74,6 +74,7 @@ setup_mysql() {
     mysql_port="$RET"
     
     mysql_opt="--host=$mysql_host --port=$mysql_port --user=root"
+    echo ">>> mysql_opt=$mysql_opt"
     while ! $MYSQLSHOW $mysql_opt 2>&1; do
         if [ "$mysql_opt" != "--host=$mysql_host --user=root" ]; then
             db_fset tuleap/mysql_passwd_retry seen false
@@ -82,7 +83,7 @@ setup_mysql() {
             db_get tuleap/mysql_passwd_retry
             mysql_passwd_retry="$RET"
             test "x$RET" != "xtrue" && die "MySQL root password fails"
-            db_fset tuleap/mysql_passwd seen false
+            db_reset tuleap/mysql_passwd
         fi
         db_input critical tuleap/mysql_passwd || true
         db_go
@@ -90,8 +91,11 @@ setup_mysql() {
         mysql_passwd="$RET"
         mysql_opt="--host=$mysql_host --port=$mysql_port --user=root --password=$mysql_passwd"
     done
+    
+    echo ">>> mysql_opt=$mysql_opt"
 
     # Test if tuleap DB already exists
+    echo "- Checking database..."
     mysql_codendi_overwrite="-"
     freshdb=0
     if $MYSQLSHOW $mysql_opt | $GREP codendi 2>&1 >/dev/null; then
@@ -103,11 +107,13 @@ setup_mysql() {
 
     # Delete the Tuleap DB if asked for
     if [ "$mysql_codendi_overwrite" = "true" ]; then
+        echo "- Droping the old Tuleap database..."
         $MYSQL $mysql_opt -e "DROP DATABASE codendi"
     fi
 
     # If no codendi, create it!
     if ! $MYSQLSHOW $mysql_opt | $GREP codendi 2>&1 >/dev/null; then
+        echo "- Creating the new Tuleap database..."
         freshdb=1
         $MYSQL $mysql_opt -e "CREATE DATABASE codendi DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"
         $CAT <<EOF | $MYSQL $mysql_opt mysql
@@ -117,14 +123,16 @@ FLUSH PRIVILEGES;
 EOF
     fi
     
-    # Clear root password for security purpose
+    # Clear MySQL root password for security purpose
     db_reset tuleap/mysql_passwd
     
     # Use now codendiadm
     mysql_opt="--host=$mysql_host --port=$mysql_port --user=codendiadm --password=$codendiadm_passwd"
 
+    echo ">>> mysql_opt=$mysql_opt"
+
     if [ $freshdb -eq 1 ]; then
-        echo "Populating the Tuleap database..."
+        echo "- Populating the Tuleap database..."
         cd $INSTALL_DIR/src/db/mysql/
         $MYSQL $mysql_opt codendi < database_structure.sql   # create the DB
         $CP database_initvalues.sql /tmp/database_initvalues.sql
