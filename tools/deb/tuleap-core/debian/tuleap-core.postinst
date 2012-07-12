@@ -1,13 +1,25 @@
-#!/bin/bash
-#
+#!/bin/sh
+# Copyright (c) Philippe Goetz, 2012. All rights reserved
 # Copyright (c) Enalean, Tuleap 2011,2012
 # Copyright (c) STMicroelectronics, Codex 2009,2010
 # Copyright (c) Xerox Corporation, Codendi 2001-2009.
 #
-# This file is licensed under the GNU General Public License version 2. See the file COPYING.
+# This file is a part of Tuleap.
 #
-#      Originally written by Laurent Julliard 2004, Codendi Team, Xerox
-# 
+# Tuleap is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# Tuleap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tuleap. If not, see <http://www.gnu.org/licenses/>.
+#
+# This file is debianized based on setup.sh.
 
 . /usr/share/debconf/confmodule
 
@@ -24,6 +36,7 @@ LN='/bin/ln'
 MKDIR='/bin/mkdir'
 PERL='/usr/bin/perl'
 RM='/bin/rm'
+SED='/bin/sed'
 
 MYSQL='/usr/bin/mysql'
 MYSQLSHOW='/usr/bin/mysqlshow'
@@ -100,10 +113,10 @@ EOF
         echo "Populating the Tuleap database..."
         cd $INSTALL_DIR/src/db/mysql/
         $MYSQL -u codendiadm codendi --password=$codendiadm_passwd < database_structure.sql   # create the DB
-        cp database_initvalues.sql /tmp/database_initvalues.sql
+        $CP database_initvalues.sql /tmp/database_initvalues.sql
         substitute '/tmp/database_initvalues.sql' '_DOMAIN_NAME_' "$sys_default_domain"
         $MYSQL -u codendiadm codendi --password=$codendiadm_passwd < /tmp/database_initvalues.sql  # populate with init values.
-        rm -f /tmp/database_initvalues.sql
+        $RM -f /tmp/database_initvalues.sql
 
         # Create dbauthuser
         $CAT <<EOF | $MYSQL $pass_opt mysql
@@ -184,14 +197,14 @@ echo "Installing configuration files..."
 
 $MKDIR -p /etc/codendi/conf
 for f in \
-/etc/codendi/conf/database.inc \
-/etc/codendi/conf/local.inc; do
+  /etc/codendi/conf/database.inc \
+  /etc/codendi/conf/local.inc; do
     fn=`basename $f`
     $CP -f $INSTALL_DIR/src/etc/$fn.deb $f
     #$CHOWN codendiadm.codendiadm $f
     $CHMOD 640 $f
 done
-$CHOWN -R www-data.www-data /etc/codendi
+$CHOWN -R codendiadm.codendiadm /etc/codendi
 
 # replace string patterns in local.inc
 substitute '/etc/codendi/conf/local.inc' '%sys_default_domain%' "$sys_default_domain" 
@@ -200,29 +213,37 @@ substitute '/etc/codendi/conf/local.inc' '%sys_long_org_name%' "$sys_long_org_na
 substitute '/etc/codendi/conf/local.inc' '%sys_fullname%' "$sys_fullname" 
 substitute '/etc/codendi/conf/local.inc' '%sys_dbauth_passwd%' "$dbauth_passwd" 
 if [ "$disable_subdomains" = "true" ]; then
-  substitute '/etc/codendi/conf/local.inc' 'sys_lists_host = "lists.' 'sys_lists_host = "'
-  substitute '/etc/codendi/conf/local.inc' 'sys_disable_subdomains = 0' 'sys_disable_subdomains = 1'
+    substitute '/etc/codendi/conf/local.inc' 'sys_lists_host = "lists.' 'sys_lists_host = "'
+    substitute '/etc/codendi/conf/local.inc' 'sys_disable_subdomains = 0' 'sys_disable_subdomains = 1'
 fi
 
 # replace string patterns in database.inc
 substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$codendiadm_passwd" 
 
 # manage apache2
-$CP -f $INSTALL_DIR/src/etc/site-tuleap.deb /etc/apache2/sites-available/tuleap
-TMPFILE="$(mktemp)" || exit 1
-TMPOUT="$(mktemp)"  || exit 1
-sed -e s#@HostName@#"$sys_fullname"# /usr/share/ssl-cert/ssleay.cnf > $TMPFILE
-if ! openssl req -config $TMPFILE -new -x509 -days 3650 -nodes \
-     -out /etc/ssl/certs/ssl-cert-tuleap.pem \
-     -keyout /etc/ssl/private/ssl-cert-tuleap.key > $TMPOUT 2>&1
-then
-     echo Could not create certificate. Openssl output was: >&2
-     cat $TMPOUT >&2
-     exit 1
+# creating ssl self-signed certificate if it isn't already there
+if [ ! -f $/etc/ssl/certs/ssl-cert-tuleap.pem -a ! -f /etc/ssl/private/ssl-cert-tuleap.key ]; then
+    TMPFILE="$(mktemp)" || exit 1
+    TMPOUT="$(mktemp)"  || exit 1
+    $SED -e s#@HostName@#"$sys_fullname"# /usr/share/ssl-cert/ssleay.cnf > $TMPFILE
+    if ! openssl req -config $TMPFILE -new -x509 -days 3650 -nodes \
+                     -out /etc/ssl/certs/ssl-cert-tuleap.pem \
+                     -keyout /etc/ssl/private/ssl-cert-tuleap.key > $TMPOUT 2>&1
+    then
+        echo Could not create certificate. Openssl output was: >&2
+        cat $TMPOUT >&2
+        exit 1
+    fi
+    $RM $TMPFILE $TMPOUT
 fi
-$RM $TMPFILE $TMPOUT
+# enable apache2 ssl module
 a2enmod ssl
+# copy site-tuleap in apache2 sites-available 
+$CP -f $INSTALL_DIR/src/etc/site-tuleap.deb /etc/apache2/sites-available/tuleap
+# disable apache2 default site
 a2dissite 000-default
+# enable apache2 tuleap site
 a2ensite tuleap
+# forece apache2 reload (above changes) - NOTE: restart cannot be used here!
 /etc/init.d/apache2 force-reload
 

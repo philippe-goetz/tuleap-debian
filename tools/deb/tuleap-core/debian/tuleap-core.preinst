@@ -1,0 +1,48 @@
+#!/bin/sh
+# Copyright (c) Philippe Goetz, 2012. All rights reserved
+#
+# This file is a part of Tuleap.
+#
+# Tuleap is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# Tuleap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tuleap. If not, see <http://www.gnu.org/licenses/>.
+
+DATADIR=/var/lib/codendi
+
+# We have to ensure the following state:
+# /etc/passwd: codendiadm:x:100:101:Codendi Administrator:/var/lib/codendi:/bin/false
+# /etc/group:  codendiadm:x:101:
+
+# creating codendiadm group if it isn't already there
+if ! getent group codendiadm >/dev/null; then
+        # Adding system group: codendiadm.
+        addgroup --system codendiadm >/dev/null
+fi
+
+# creating codendiadm user if it isn't already there
+if ! getent passwd codendiadm >/dev/null; then
+        # Adding system user: codendiadm.
+        adduser \
+          --system \
+          --disabled-login \
+          --ingroup codendiadm \
+          --home $DATADIR \
+          --gecos "Codendi Administrator" \
+          --shell /bin/false \
+          codendiadm  >/dev/null
+fi
+
+# creating codendi home directory if it isn't already there
+if [ ! -d $DATADIR -a ! -L $DATADIR ]; then
+        mkdir $DATADIR
+fi
+

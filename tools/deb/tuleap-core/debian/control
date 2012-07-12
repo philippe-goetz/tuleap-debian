@@ -10,13 +10,16 @@ Package: tuleap-core
 Architecture: all
 Depends: ${misc:Depends}, debconf,
          apache2,
+         apache2-mpm-itk,
          libphp-jpgraph-tuleap,
          libapache2-mod-php5,
          mysql-server,
          php-htmlpurifier,
          php5,
-         php5-mysql,
-         php5-gd
+         php5-gd,
+         php5-mysql
+# apache2-mpm-itk Apache web server Multi-Processing Module (MPM) allows you to
+#                 run each of your vhost under a separate uid and gid
 # php5-gd is a dependency of libphp-jpgraph-tuleap (not tuleap)
 Description: The Tuleap forge
  Tuleap is a web based application that address all the aspects of product

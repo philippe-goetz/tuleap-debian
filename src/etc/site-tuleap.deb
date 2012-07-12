@@ -1,6 +1,7 @@
 
 NameVirtualHost *:443
 <VirtualHost *:443>
+   AssignUserId codendiadm codendiadm
    SSLEngine on
    SSLCertificateFile /etc/ssl/certs/ssl-cert-tuleap.pem
    SSLCertificateKeyFile /etc/ssl/private/ssl-cert-tuleap.key
@@ -8,6 +9,7 @@ NameVirtualHost *:443
 </VirtualHost>
 
 <VirtualHost *:80>
+   AssignUserId codendiadm codendiadm
    DocumentRoot /usr/share/codendi/src/www
 </VirtualHost>
 
