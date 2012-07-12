@@ -31,6 +31,12 @@ Default: yes
 Description: Disable sub-domain management (no DNS delegation)?
  Test.
 
+Template: tuleap/mysql_httpd_host
+Type: string
+Default: localhost
+Description: MySQL HTTPD Host:
+ Test.
+
 Template: tuleap/mysql_host
 Type: string
 Default: localhost

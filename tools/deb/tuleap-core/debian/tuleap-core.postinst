@@ -60,9 +60,22 @@ substitute() {
 setup_mysql() {
     echo "Creating the Tuleap database..."
 
-    pass_opt="--host=$mysql_host --user=root"
-    while ! $MYSQLSHOW $pass_opt 2>&1; do
-        if [ "$pass_opt" != "--host=$mysql_host --user=root" ]; then
+    db_input low tuleap/mysql_httpd_host || true
+    db_go
+    db_get tuleap/mysql_httpd_host
+    mysql_httpd_host="$RET"
+    db_input low tuleap/mysql_host || true
+    db_go
+    db_get tuleap/mysql_host
+    mysql_host="$RET"
+    db_input low tuleap/mysql_port || true
+    db_go
+    db_get tuleap/mysql_port
+    mysql_port="$RET"
+    
+    mysql_opt="--host=$mysql_host --port=$mysql_port --user=root"
+    while ! $MYSQLSHOW $mysql_opt 2>&1; do
+        if [ "$mysql_opt" != "--host=$mysql_host --user=root" ]; then
             db_fset tuleap/mysql_passwd_retry seen false
             db_input critical tuleap/mysql_passwd_retry || true
             db_go
@@ -75,15 +88,13 @@ setup_mysql() {
         db_go
         db_get tuleap/mysql_passwd
         mysql_passwd="$RET"
-        echo mysql_passwd=$mysql_passwd
-        pass_opt="--host=$mysql_host --user=root --password=$mysql_passwd"
+        mysql_opt="--host=$mysql_host --port=$mysql_port --user=root --password=$mysql_passwd"
     done
 
     # Test if tuleap DB already exists
     mysql_codendi_overwrite="-"
     freshdb=0
-    if $MYSQLSHOW $pass_opt | $GREP codendi 2>&1 >/dev/null; then
-        db_reset tuleap/mysql_codendi_overwrite
+    if $MYSQLSHOW $mysql_opt | $GREP codendi 2>&1 >/dev/null; then
         db_input critical tuleap/mysql_codendi_overwrite || true
         db_go
         db_get tuleap/mysql_codendi_overwrite
@@ -92,34 +103,34 @@ setup_mysql() {
 
     # Delete the Tuleap DB if asked for
     if [ "$mysql_codendi_overwrite" = "true" ]; then
-        $MYSQL $pass_opt -e "DROP DATABASE codendi"
+        $MYSQL $mysql_opt -e "DROP DATABASE codendi"
     fi
 
     # If no codendi, create it!
-    if ! $MYSQLSHOW $pass_opt | $GREP codendi 2>&1 >/dev/null; then
+    if ! $MYSQLSHOW $mysql_opt | $GREP codendi 2>&1 >/dev/null; then
         freshdb=1
-        $MYSQL $pass_opt -e "CREATE DATABASE codendi DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"
-        $CAT <<EOF | $MYSQL $pass_opt mysql
+        $MYSQL $mysql_opt -e "CREATE DATABASE codendi DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"
+        $CAT <<EOF | $MYSQL $mysql_opt mysql
 GRANT ALL PRIVILEGES on *.* to 'codendiadm'@'$mysql_httpd_host' identified by '$codendiadm_passwd' WITH GRANT OPTION;
 REVOKE SUPER ON *.* FROM 'codendiadm'@'$mysql_httpd_host';
-GRANT ALL PRIVILEGES on *.* to 'root'@'$mysql_httpd_host' identified by '$rt_passwd';
 FLUSH PRIVILEGES;
 EOF
     fi
-    # Password has changed
-    pass_opt="-uroot --password=$rt_passwd"
+    
+    # Use now codendiadm
+    mysql_opt="--host=$mysql_host --port=$mysql_port --user=codendiadm --password=$codendiadm_passwd"
 
     if [ $freshdb -eq 1 ]; then
         echo "Populating the Tuleap database..."
         cd $INSTALL_DIR/src/db/mysql/
-        $MYSQL -u codendiadm codendi --password=$codendiadm_passwd < database_structure.sql   # create the DB
+        $MYSQL $mysql_opt codendi < database_structure.sql   # create the DB
         $CP database_initvalues.sql /tmp/database_initvalues.sql
         substitute '/tmp/database_initvalues.sql' '_DOMAIN_NAME_' "$sys_default_domain"
-        $MYSQL -u codendiadm codendi --password=$codendiadm_passwd < /tmp/database_initvalues.sql  # populate with init values.
+        $MYSQL $mysql_opt codendi < /tmp/database_initvalues.sql  # populate with init values.
         $RM -f /tmp/database_initvalues.sql
 
         # Create dbauthuser
-        $CAT <<EOF | $MYSQL $pass_opt mysql
+        $CAT <<EOF | $MYSQL $mysql_opt mysql
 GRANT SELECT ON codendi.user to dbauthuser@$mysql_httpd_host identified by '$dbauth_passwd';
 GRANT SELECT ON codendi.groups to dbauthuser@$mysql_httpd_host;
 GRANT SELECT ON codendi.user_group to dbauthuser@$mysql_httpd_host;
@@ -128,56 +139,96 @@ EOF
     fi
 }
 ###############################################################################
+#
+# Apache2 configuration
+#
+setup_apache2() {
+# creating ssl self-signed certificate if it isn't already there
+if [ ! -f $/etc/ssl/certs/ssl-cert-tuleap.pem -a ! -f /etc/ssl/private/ssl-cert-tuleap.key ]; then
+    TMPFILE="$(mktemp)" || exit 1
+    TMPOUT="$(mktemp)"  || exit 1
+    $SED -e s#@HostName@#"$sys_fullname"# /usr/share/ssl-cert/ssleay.cnf > $TMPFILE
+    if ! openssl req -config $TMPFILE -new -x509 -days 3650 -nodes \
+                     -out /etc/ssl/certs/ssl-cert-tuleap.pem \
+                     -keyout /etc/ssl/private/ssl-cert-tuleap.key > $TMPOUT 2>&1
+    then
+        echo Could not create certificate. Openssl output was: >&2
+        cat $TMPOUT >&2
+        exit 1
+    fi
+    $RM $TMPFILE $TMPOUT
+fi
+# enable apache2 ssl module
+a2enmod ssl
+# enable apache2 rewrite module
+a2enmod rewrite
+# copy site-tuleap in apache2 sites-available 
+$CP -f $INSTALL_DIR/src/etc/site-tuleap.deb /etc/apache2/sites-available/tuleap
+# disable apache2 default site
+a2dissite 000-default
+# enable apache2 tuleap site
+a2ensite tuleap
+# forece apache2 reload (above changes) - NOTE: restart cannot be used here!
+/etc/init.d/apache2 force-reload
+}
+###############################################################################
 
-rt_passwd="root"
-mysql_httpd_host="localhost"
 dbauth_passwd="db"
 codendiadm_passwd="codendi"
 
 if [ "x$1" = "xreconfigure" ]; then
-    #db_reset tuleap/mysql_host
-    db_reset tuleap/sys_default_domain
-    db_set tuleap/sys_default_domain `hostname --short`
-    db_reset tuleap/sys_fullname
-    db_set tuleap/sys_fullname `hostname --fqdn`
-    db_reset tuleap/sys_ip_address
-    db_set tuleap/sys_ip_address `hostname --ip-address`
-    db_reset tuleap/sys_org_name
-    db_reset tuleap/sys_long_org_name
-    db_reset tuleap/disable_subdomains
+    db_fset tuleap/sys_default_domain seen false
+    db_fset tuleap/sys_fullname seen false
+    db_fset tuleap/sys_ip_address seen false
+    db_fset tuleap/sys_org_name seen false
+    db_fset tuleap/sys_long_org_name seen false
+    db_fset tuleap/disable_subdomains seen false
+    db_fset tuleap/mysql_host seen false
+    db_fset tuleap/mysql_passwd seen false
+    db_fset tuleap/mysql_codendi_overwrite seen false
 fi
 
-#db_input critical tuleap/mysql_host || true
-#db_go
-db_get tuleap/mysql_host
-mysql_host="$RET"
+db_get tuleap/sys_default_domain
+if [ "x$RET" = "x" ]; then
+    db_set tuleap/sys_default_domain `hostname --short`
+fi
 
-db_input critical tuleap/sys_default_domain || true
+db_get tuleap/sys_fullname
+if [ "x$RET" = "x" ]; then
+    db_set tuleap/sys_fullname `hostname --fqdn`
+fi
+
+db_get tuleap/sys_ip_address
+if [ "x$RET" = "x" ]; then
+    db_set tuleap/sys_ip_address `hostname --ip-address`
+fi
+
+db_input high tuleap/sys_default_domain || true
 db_go
 db_get tuleap/sys_default_domain
 sys_default_domain="$RET"
 
-db_input critical tuleap/sys_fullname || true
+db_input high tuleap/sys_fullname || true
 db_go
 db_get tuleap/sys_fullname
 sys_fullname="$RET"
 
-db_input critical tuleap/sys_ip_address || true
+db_input high tuleap/sys_ip_address || true
 db_go
 db_get tuleap/sys_ip_address
 sys_ip_address="$RET"
 
-db_input critical tuleap/sys_org_name || true
+db_input high tuleap/sys_org_name || true
 db_go
 db_get tuleap/sys_org_name
 sys_org_name="$RET"
 
-db_input critical tuleap/sys_long_org_name || true
+db_input high tuleap/sys_long_org_name || true
 db_go
 db_get tuleap/sys_long_org_name
 sys_long_org_name="$RET"
 
-db_input critical tuleap/disable_subdomains || true
+db_input high tuleap/disable_subdomains || true
 db_go
 db_get tuleap/disable_subdomains
 disable_subdomains="$RET"
@@ -189,6 +240,7 @@ disable_subdomains="$RET"
 #echo "sys_long_org_name=$sys_long_org_name"
 #echo "disable_subdomains=$disable_subdomains"
 
+# setup mysql
 setup_mysql
 
 set -x
@@ -220,32 +272,5 @@ fi
 # replace string patterns in database.inc
 substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$codendiadm_passwd" 
 
-# manage apache2
-# creating ssl self-signed certificate if it isn't already there
-if [ ! -f $/etc/ssl/certs/ssl-cert-tuleap.pem -a ! -f /etc/ssl/private/ssl-cert-tuleap.key ]; then
-    TMPFILE="$(mktemp)" || exit 1
-    TMPOUT="$(mktemp)"  || exit 1
-    $SED -e s#@HostName@#"$sys_fullname"# /usr/share/ssl-cert/ssleay.cnf > $TMPFILE
-    if ! openssl req -config $TMPFILE -new -x509 -days 3650 -nodes \
-                     -out /etc/ssl/certs/ssl-cert-tuleap.pem \
-                     -keyout /etc/ssl/private/ssl-cert-tuleap.key > $TMPOUT 2>&1
-    then
-        echo Could not create certificate. Openssl output was: >&2
-        cat $TMPOUT >&2
-        exit 1
-    fi
-    $RM $TMPFILE $TMPOUT
-fi
-# enable apache2 ssl module
-a2enmod ssl
-# enable apache2 rewrite module
-a2enmod rewrite
-# copy site-tuleap in apache2 sites-available 
-$CP -f $INSTALL_DIR/src/etc/site-tuleap.deb /etc/apache2/sites-available/tuleap
-# disable apache2 default site
-a2dissite 000-default
-# enable apache2 tuleap site
-a2ensite tuleap
-# forece apache2 reload (above changes) - NOTE: restart cannot be used here!
-/etc/init.d/apache2 force-reload
-
+# setup apache2
+setup_apache2
