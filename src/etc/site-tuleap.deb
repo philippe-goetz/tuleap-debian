@@ -108,3 +108,92 @@ AliasMatch ^/customplugins/([^/]*)/(.*) /etc/codendi/plugins/$1/www/$2
     Allow from all
     php_value include_path "/usr/share/pear:/usr/share/codendi/src/www/include:/usr/share/codendi/src"
 </DirectoryMatch>
+
+#
+# CGI scripts
+#
+
+ScriptAlias /cgi-bin/ "/var/www/cgi-bin/"
+
+# FollowSymLinks is needed here because of the rewrite rule (otherwise, other CGIs are forbidden...)
+<Directory "/var/www/cgi-bin">
+    AllowOverride None
+    Options ExecCGI FollowSymLinks
+    Order allow,deny
+    Allow from all
+    RedirectMatch permanent /cgi-bin/cvsweb.cgi/(.*) /cvs/viewvc.php/$1
+    <IfModule mod_rewrite.c>
+      RewriteEngine on
+      RewriteCond %{QUERY_STRING} roottype=svn
+      RewriteRule viewcvs.cgi/(.*) /svn/viewvc.php/$1 [R]
+
+      RewriteRule viewcvs.cgi/(.*) /cvs/viewvc.php/$1 [R]
+    </IfModule>
+</Directory>
+
+# Redirect viewcvs calls to viewvc
+RedirectMatch permanent ^/svn/viewcvs.php(.*) /svn/viewvc.php$1
+RedirectMatch permanent ^/cvs/viewcvs.php(.*) /cvs/viewvc.php$1
+
+# Forbid access to .svn directories
+RedirectMatch 404 /\.svn(/|$)
+
+#
+# Instant messaging: http-bind for web chat.
+# Needs mod_proxy and mod_proxy_http for reverse proxying
+#
+# For HTTPS binding, make sure you have a valid SSL certificate, and replace
+# port number 7070 by 7443 in the following lines and 'http' by 'https'
+# Note that you may not need HTTPS here: it only adds encryption between
+# the Apache server (reverse proxy) and the OpenFire server.
+#
+RewriteEngine on
+RewriteRule /http-bind  http://%sys_default_domain%:7070/http-bind/ [P]
+RewriteRule /http-bind/ http://%sys_default_domain%:7070/http-bind/ [P]
+
+
+# Look for images in themes. Here are the priorities:
+# 1. /etc/themes/XXXX/images
+# 2. /etc/themes/custom/images
+# 3. .../www/themes/XXXX/images
+# 4. .../www/themes/custom/images
+#
+# Now if the user asks specifically for a common image, then return the common image
+
+# If we ask for a common image ^/(?:custom|themes)/custom/images/(.+)
+# And the image has been redefined in /etc/codendi/themes/common/images/$1
+# Then serve /etc/codendi/themes/common/images/$1
+RewriteCond  /etc/codendi/themes/common/images/$1  -f
+RewriteRule  ^/(?:custom|themes)/common/images/(.+)  /etc/codendi/themes/common/images/$1  [L]
+
+# Else if we ask for a Theme image ^/(?:custom|themes)/([^/]*)/images/(.+)
+# And the image has been redefined in /etc/codendi/themes/$1/images/$2
+# Then serve /etc/codendi/themes/$1/images/$2
+RewriteCond  /etc/codendi/themes/$1/images/$2  -f
+RewriteRule  ^/(?:custom|themes)/([^/]*)/images/(.+)  /etc/codendi/themes/$1/images/$2  [L]
+
+# Else if we ask for an image (either common or Theme) ^/(?:custom|themes)/(?:[^/]*)/images/(.+)
+# And the image has been redefined in /etc/codendi/themes/common/images/$1 
+# Then serve /etc/codendi/themes/common/images/$1
+# Exemple: organization_logo.png put globaly in /etc/.../common/
+RewriteCond  /etc/codendi/themes/common/images/$1  -f
+RewriteRule  ^/(?:custom|themes)/[^/]*/images/(.+)  /etc/codendi/themes/common/images/$1  [L]
+
+# Else if we ask for a common image ^/(?:custom|themes)/common/images/(.+)
+# Then serve the standard one /usr/share/codendi/src/www/themes/common/images/$1
+RewriteCond  /usr/share/codendi/src/www/themes/common/images/$1  -f
+RewriteRule  ^/(?:custom|themes)/common/images/(.+)  /usr/share/codendi/src/www/themes/common/images/$1  [L]
+
+# Else if we ask for a Theme image ^/(?:custom|themes)/([^/]*)/images/(.+)
+# Then serve the standard one /usr/share/codendi/src/www/themes/$1/images/$2
+RewriteCond  /usr/share/codendi/src/www/themes/$1/images/$2  -f
+RewriteRule  ^/(?:custom|themes)/([^/]*)/images/(.+)  /usr/share/codendi/src/www/themes/$1/images/$2  [L]
+
+# Else if we ask for an image ^/(?:custom|themes)/([^/]*)/images/(.+)
+# Then serve the standard common one
+RewriteCond  /usr/share/codendi/src/www/themes/common/images/$1  -f
+RewriteRule  ^/(?:custom|themes)/[^/]*/images/(.+)  /usr/share/codendi/src/www/themes/common/images/$1  [L]
+
+# Else go on for other Alias or ScriptAlias directives, etc.
+RewriteRule   ^(.+)  -  [PT]
+
