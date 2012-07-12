@@ -64,10 +64,10 @@ Type: boolean
 Default: true
 Description: Tuleap Database already exists. Overwrite?
  Test.
- 
+
 Template: tuleap/final_note
 Type: note
-Description: Tuleap
- admin
- siteadmin
- 
+Description: Tuleap Final Note
+ Default admin credentials are login: admin / password: siteadmin
+ CHANGE DEFAULT CREDENTIALS BEFORE FIRST USAGE
+
