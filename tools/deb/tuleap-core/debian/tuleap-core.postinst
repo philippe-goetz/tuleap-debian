@@ -238,6 +238,8 @@ if [ ! -f $/etc/ssl/certs/ssl-cert-tuleap.pem -a ! -f /etc/ssl/private/ssl-cert-
 fi
 # enable apache2 ssl module
 a2enmod ssl
+# enable apache2 rewrite module
+a2anmod rewrite
 # copy site-tuleap in apache2 sites-available 
 $CP -f $INSTALL_DIR/src/etc/site-tuleap.deb /etc/apache2/sites-available/tuleap
 # disable apache2 default site
