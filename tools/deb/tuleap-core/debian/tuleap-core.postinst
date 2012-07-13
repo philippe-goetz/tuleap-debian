@@ -71,7 +71,19 @@ setup_mysql() {
     db_go
     db_get tuleap/mysql_port
     mysql_port="$RET"
-
+    db_input low tuleap/mysql_dbname || true
+    db_go
+    db_get tuleap/mysql_dbname
+    mysql_dbname="$RET"
+    db_input low tuleap/mysql_dbuser || true
+    db_go
+    db_get tuleap/mysql_dbuser
+    mysql_dbuser="$RET"
+    db_input low tuleap/mysql_dbpasswd || true
+    db_go
+    db_get tuleap/mysql_dbpasswd
+    mysql_dbpasswd="$RET"
+    
     mysql_opt="--host=$mysql_host --port=$mysql_port --user=root"
     mysql_passwd_retry=
     while ! $MYSQLSHOW $mysql_opt 2>&1; do
@@ -96,33 +108,31 @@ setup_mysql() {
         mysql_passwd_retry="retry"
     done
 
-    echo ">>> mysql_opt=$mysql_opt"
-
-    # Test if tuleap DB already exists
+    # Test if $mysql_dbname already exists
     echo "- Checking database..."
-    mysql_codendi_overwrite="-"
+    mysql_overwrite="-"
     freshdb=0
-    if $MYSQLSHOW $mysql_opt | $GREP codendi 2>&1 >/dev/null; then
-        db_input critical tuleap/mysql_codendi_overwrite || true
+    if $MYSQLSHOW $mysql_opt | $GREP $mysql_dbname 2>&1 >/dev/null; then
+        db_input critical tuleap/mysql_overwrite || true
         db_go
-        db_get tuleap/mysql_codendi_overwrite
-        mysql_codendi_overwrite="$RET"
+        db_get tuleap/mysql_overwrite
+        mysql_overwrite="$RET"
     fi
 
-    # Delete the Tuleap DB if asked for
-    if [ "$mysql_codendi_overwrite" = "true" ]; then
-        echo "- Droping the old Tuleap database..."
-        $MYSQL $mysql_opt -e "DROP DATABASE codendi"
+    # Delete $mysql_dbname if asked for
+    if [ "$mysql_overwrite" = "true" ]; then
+        echo "- Droping the old database..."
+        $MYSQL $mysql_opt -e "DROP DATABASE $mysql_dbname"
     fi
 
-    # If no codendi, create it!
-    if ! $MYSQLSHOW $mysql_opt | $GREP codendi 2>&1 >/dev/null; then
-        echo "- Creating the new Tuleap database..."
+    # If no $mysql_dbname, create it!
+    if ! $MYSQLSHOW $mysql_opt | $GREP $mysql_dbname 2>&1 >/dev/null; then
+        echo "- Creating the new database..."
         freshdb=1
-        $MYSQL $mysql_opt -e "CREATE DATABASE codendi DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"
+        $MYSQL $mysql_opt -e "CREATE DATABASE $mysql_dbname DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci"
         $CAT <<EOF | $MYSQL $mysql_opt mysql
-GRANT ALL PRIVILEGES on *.* to 'codendiadm'@'$mysql_httpd_host' identified by '$codendiadm_passwd' WITH GRANT OPTION;
-REVOKE SUPER ON *.* FROM 'codendiadm'@'$mysql_httpd_host';
+GRANT ALL PRIVILEGES on *.* to '$mysql_dbuser'@'$mysql_httpd_host' identified by '$mysql_dbpasswd' WITH GRANT OPTION;
+REVOKE SUPER ON *.* FROM '$mysql_dbuser'@'$mysql_httpd_host';
 FLUSH PRIVILEGES;
 EOF
     fi
@@ -130,25 +140,23 @@ EOF
     # Clear MySQL root password for security purpose
     db_reset tuleap/mysql_passwd
     
-    # Use now codendiadm
-    mysql_opt="--host=$mysql_host --port=$mysql_port --user=codendiadm --password=$codendiadm_passwd"
-
-    echo ">>> mysql_opt=$mysql_opt"
+    # Use now $mysql_dbuser
+    mysql_opt="--host=$mysql_host --port=$mysql_port --user=$mysql_dbuser --password=$mysql_dbpasswd"
 
     if [ $freshdb -eq 1 ]; then
         echo "- Populating the Tuleap database..."
         cd $INSTALL_DIR/src/db/mysql/
-        $MYSQL $mysql_opt codendi < database_structure.sql   # create the DB
+        $MYSQL $mysql_opt $mysql_dbname < database_structure.sql   # create the DB
         $CP database_initvalues.sql /tmp/database_initvalues.sql
         substitute '/tmp/database_initvalues.sql' '_DOMAIN_NAME_' "$sys_default_domain"
-        $MYSQL $mysql_opt codendi < /tmp/database_initvalues.sql  # populate with init values.
+        $MYSQL $mysql_opt $mysql_dbname < /tmp/database_initvalues.sql  # populate with init values.
         $RM -f /tmp/database_initvalues.sql
 
         # Create dbauthuser
         $CAT <<EOF | $MYSQL $mysql_opt mysql
-GRANT SELECT ON codendi.user to dbauthuser@$mysql_httpd_host identified by '$dbauth_passwd';
-GRANT SELECT ON codendi.groups to dbauthuser@$mysql_httpd_host;
-GRANT SELECT ON codendi.user_group to dbauthuser@$mysql_httpd_host;
+GRANT SELECT ON $mysql_dbname.user to dbauthuser@$mysql_httpd_host identified by '$dbauth_passwd';
+GRANT SELECT ON $mysql_dbname.groups to dbauthuser@$mysql_httpd_host;
+GRANT SELECT ON $mysql_dbname.user_group to dbauthuser@$mysql_httpd_host;
 FLUSH PRIVILEGES;
 EOF
     fi
@@ -189,7 +197,6 @@ a2ensite tuleap
 ###############################################################################
 
 dbauth_passwd="db"
-codendiadm_passwd="codendi"
 
 if [ "x$1" = "xreconfigure" ]; then
     db_fset tuleap/sys_default_domain seen false
@@ -201,7 +208,7 @@ if [ "x$1" = "xreconfigure" ]; then
     db_fset tuleap/mysql_host seen false
     db_fset tuleap/mysql_port seen false
     db_fset tuleap/mysql_passwd seen false
-    db_fset tuleap/mysql_codendi_overwrite seen false
+    db_fset tuleap/mysql_overwrite seen false
 fi
 
 db_get tuleap/sys_default_domain
@@ -259,8 +266,6 @@ disable_subdomains="$RET"
 # setup mysql
 setup_mysql
 
-set -x
-
 echo "Installing configuration files..."
 
 $MKDIR -p /etc/codendi/conf
@@ -286,7 +291,10 @@ if [ "$disable_subdomains" = "true" ]; then
 fi
 
 # replace string patterns in database.inc
-substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$codendiadm_passwd" 
+substitute '/etc/codendi/conf/database.inc' '%sys_dbhost%' "$mysql_host:$mysql_port" 
+substitute '/etc/codendi/conf/database.inc' '%sys_dbname%' "$mysql_dbname" 
+substitute '/etc/codendi/conf/database.inc' '%sys_dbuser%' "$mysql_dbuser" 
+substitute '/etc/codendi/conf/database.inc' '%sys_dbpasswd%' "$mysql_dbpasswd" 
 
 # setup apache2
 setup_apache2

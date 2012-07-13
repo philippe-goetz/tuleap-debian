@@ -60,7 +60,25 @@ Default: false
 Description: MySQL Password Retry:
  Test.
 
-Template: tuleap/mysql_codendi_overwrite
+Template: tuleap/mysql_dbname
+Type: string
+Default: codendi
+Description: Tuleap Database Name:
+ Test.
+
+Template: tuleap/mysql_dbuser
+Type: string
+Default: codendiadm
+Description: Tuleap Database User:
+ Test.
+
+Template: tuleap/mysql_dbpasswd
+Type: password
+Default: codendiadm_passwd
+Description: Tuleap Database Password:
+ Test.
+
+Template: tuleap/mysql_overwrite
 Type: boolean
 Default: true
 Description: Tuleap Database already exists. Overwrite?
